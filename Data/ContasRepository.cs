@@ -19,21 +19,19 @@ namespace ContasService.Data
             }
 
             _context.Add(conta);
+            _context.ChangeTracker.DetectChanges();
+
+            conta.Numero = conta.Id.ToString();
         }
 
-        public void DeleteConta(Conta conta)
+        public void DeleteContas(IEnumerable<Conta> contas)
         {
-            if (conta == null)
-            {
-                throw new ArgumentNullException(nameof(conta));
-            }
-
-            _context.Remove(conta);
+            _context.RemoveRange(contas);
         }
 
-        public Conta? GetContaByCpfPortador(string portadorCpf)
+        public IEnumerable<Conta> GetContasByCpfPortador(string portadorCpf)
         {
-            return _context.Contas.FirstOrDefault(e => portadorCpf == e.PortadorCpf);
+            return _context.Contas.Where(e => portadorCpf == e.PortadorCpf).ToList();
         }
 
         public Conta? GetContaByNumero(string numero)

@@ -5,8 +5,8 @@ namespace ContasService.Data
     public interface IContasRepository
     {
         void CreateConta(Conta conta);
-        void DeleteConta(Conta conta);
-        Conta? GetContaByCpfPortador(string portadorCpf);
+        void DeleteContas(IEnumerable<Conta> contas);
+        IEnumerable<Conta> GetContasByCpfPortador(string portadorCpf);
         Conta? GetContaByNumero(string numero);
         IEnumerable<Conta> GetContas();
 
