@@ -13,6 +13,8 @@ namespace ContasService.Profiles
             CreateMap<ContaCreateDto, Conta>().AfterMap((o,n) => {
                 n.Ativa = true;
             });
+            CreateMap<Conta, ContaUpdateDto>();
+            CreateMap<ContaUpdateDto, Conta>();
         }
     }
 }
