@@ -31,7 +31,7 @@ namespace ContasService.Data
 
         public IEnumerable<Conta> GetContasByCpfPortador(string portadorCpf)
         {
-            return _context.Contas.Where(e => portadorCpf == e.PortadorCpf).ToList();
+            return _context.Contas.Where(e => portadorCpf == e.PortadorCpf);
         }
 
         public Conta? GetContaByNumero(string numero)
@@ -41,7 +41,7 @@ namespace ContasService.Data
 
         public IEnumerable<Conta> GetContas()
         {
-            return _context.Contas.ToList();
+            return _context.Contas;
         }
 
         public void SaveChanges()
