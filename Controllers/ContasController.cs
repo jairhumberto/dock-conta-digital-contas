@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ContasService.Data;
 using ContasService.Dtos;
 using ContasService.Models;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace ContasService.Controllers
 {
@@ -35,15 +36,15 @@ namespace ContasService.Controllers
         {
             var contas = _repository.GetContasByCpfPortador(portadorCpf);
 
-            if (contas.Count() > 0)
+            if (contas.Count() == 0)
             {
-                _repository.DeleteContas(contas);
-                _repository.SaveChanges();
-
-                return NoContent();
+                return NotFound();
             }
 
-            return NotFound();
+            _repository.DeleteContas(contas);
+            _repository.SaveChanges();
+
+            return NoContent();
         }
 
         [HttpGet("{numero}", Name="GetContaByNumero")]
@@ -51,12 +52,12 @@ namespace ContasService.Controllers
         {
             var conta = _repository.GetContaByNumero(numero);
 
-            if (conta != null)
+            if (conta == null)
             {
-                return Ok(_mapper.Map<ContaReadDto>(conta));
+                return NotFound();
             }
 
-            return NotFound();
+            return Ok(_mapper.Map<ContaReadDto>(conta));
         }
 
         [HttpGet]
@@ -64,6 +65,30 @@ namespace ContasService.Controllers
         {
             var Contas = _repository.GetContas();
             return Ok(_mapper.Map<IEnumerable<ContaReadDto>>(Contas));
+        }
+
+        [HttpPatch("{numero}")]
+        public ActionResult UpdateConta(string numero, JsonPatchDocument<ContaUpdateDto> patchDocument)
+        {
+            var conta = _repository.GetContaByNumero(numero);
+
+            if (conta == null)
+            {
+                return NotFound();
+            }
+
+            var contaDto = _mapper.Map<ContaUpdateDto>(conta);
+            patchDocument.ApplyTo(contaDto, ModelState);
+
+            if(!TryValidateModel(contaDto))
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            _mapper.Map(contaDto, conta);
+            _repository.SaveChanges();
+
+            return NoContent();
         }
     }
 }
