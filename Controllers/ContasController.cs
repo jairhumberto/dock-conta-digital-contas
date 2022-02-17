@@ -93,10 +93,11 @@ namespace ContasService.Controllers
                 return ValidationProblem(ModelState);
             }
 
+            _mapper.Map(contaDto, contaModel);
+            
             var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
             await _operacaoDataClient.SendContaToOperacao(contaReadDto);
 
-            _mapper.Map(contaDto, contaModel);
             _contasRepository.SaveChanges();
 
             return NoContent();
