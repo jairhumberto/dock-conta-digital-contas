@@ -31,8 +31,15 @@ namespace ContasService.Controllers
             _repository.CreateConta(contaModel);
             _repository.SaveChanges();
             
-            var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
-            await _operacaoDataClient.SendContaToOperacao(contaReadDto);
+            try
+            {
+                var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
+                await _operacaoDataClient.SendContaToOperacao(contaReadDto);
+            }
+            catch(Exception)
+            {
+                Console.WriteLine("Operacoes está indisponível");
+            }
 
             return CreatedAtRoute(nameof(GetContaByNumero), new { Numero = contaModel.Numero }, _mapper.Map<ContaReadDto>(contaModel));
         }
