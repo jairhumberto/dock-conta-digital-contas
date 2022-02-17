@@ -4,6 +4,7 @@ using ContasService.Data;
 using ContasService.Dtos;
 using ContasService.Models;
 using Microsoft.AspNetCore.JsonPatch;
+using ContasService.SyncDataServices.Http;
 
 namespace ContasService.Controllers
 {
@@ -13,22 +14,27 @@ namespace ContasService.Controllers
     {
         private readonly IContasRepository _repository;
         private readonly IMapper _mapper;
+        private readonly IOperacaoDataClient _operacaoDataClient;
 
-        public ContasController(IContasRepository repository, IMapper mapper)
+        public ContasController(IContasRepository repository, IMapper mapper, IOperacaoDataClient operacaoDataClient)
         {
             _repository = repository;
             _mapper = mapper;
+            _operacaoDataClient = operacaoDataClient;
         }
 
         [HttpPost]
-        public ActionResult<ContaReadDto> CreateConta(ContaCreateDto ContaCreateDto)
+        public async Task<ActionResult<ContaReadDto>> CreateConta(ContaCreateDto ContaCreateDto)
         {
-            var conta = _mapper.Map<Conta>(ContaCreateDto);
-            
-            _repository.CreateConta(conta);
-            _repository.SaveChanges();
+            var contaModel = _mapper.Map<Conta>(ContaCreateDto);
 
-            return CreatedAtRoute(nameof(GetContaByNumero), new { Numero = conta.Numero }, _mapper.Map<ContaReadDto>(conta));
+            _repository.CreateConta(contaModel);
+            _repository.SaveChanges();
+            
+            var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
+            await _operacaoDataClient.SendContaToOperacao(contaReadDto);
+
+            return CreatedAtRoute(nameof(GetContaByNumero), new { Numero = contaModel.Numero }, _mapper.Map<ContaReadDto>(contaModel));
         }
 
         [HttpDelete("{portadorCpf}")]

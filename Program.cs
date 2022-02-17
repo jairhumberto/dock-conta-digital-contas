@@ -1,11 +1,14 @@
 using ContasService.Data;
+using ContasService.SyncDataServices.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMemory"));
+
 builder.Services.AddScoped<IContasRepository, ContasRepository>();
+builder.Services.AddHttpClient<IOperacaoDataClient, HttpOperacaoDataClient>();
 
 builder.Services.AddControllers().AddNewtonsoftJson(s => {
     s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
@@ -26,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
