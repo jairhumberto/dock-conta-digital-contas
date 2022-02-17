@@ -11,5 +11,6 @@ namespace ContasService.Data
         }
 
         public DbSet<Conta> Contas { get; set; }
+        public DbSet<Portador> Portadores { get; set; }
     }
 }
