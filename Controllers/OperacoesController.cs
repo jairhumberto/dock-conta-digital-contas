@@ -47,10 +47,11 @@ namespace ContasService.Controllers
                 return Unauthorized("Conta inativa ou bloqueada");
             }
 
+            contaModel.Saldo += operacaoReadDto.Tipo == "saque" ? -operacaoReadDto.Valor : operacaoReadDto.Valor;
+            
             var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
             await _operacoesServiceClient.CreateConta(contaReadDto);
 
-            contaModel.Saldo += operacaoReadDto.Tipo == "saque" ? -operacaoReadDto.Valor : operacaoReadDto.Valor;
             _contasRepository.SaveChanges();
 
             return NoContent();

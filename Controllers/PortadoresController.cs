@@ -52,7 +52,7 @@ namespace ContasService.Controllers
 
             if (contasModel.Count() > 0)
             {
-                throw new HttpRequestException();
+                return Conflict("Portador possui conta");
             }
 
             _portadoresRepository.DeletePortador(portadorModel);

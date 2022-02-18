@@ -57,7 +57,7 @@ namespace ContasService.Controllers
 
             if (contaModel == null)
             {
-                return NotFound();
+                return NotFound("Conta nao cadastrada");
             }
 
             return Ok(_mapper.Map<ContaReadDto>(contaModel));
@@ -77,7 +77,7 @@ namespace ContasService.Controllers
 
             if (contaModel == null)
             {
-                return NotFound();
+                return NotFound("Conta nao cadastrada");
             }
 
             var contaDto = _mapper.Map<ContaUpdateDto>(contaModel);
