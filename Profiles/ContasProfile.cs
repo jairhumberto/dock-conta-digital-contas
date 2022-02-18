@@ -1,4 +1,3 @@
-using System.Text.RegularExpressions;
 using AutoMapper;
 using ContasService.Dtos;
 using ContasService.Models;

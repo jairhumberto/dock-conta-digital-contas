@@ -36,11 +36,6 @@ namespace ContasService.Data
             return _context.Portadores.FirstOrDefault(e => cpf == e.Cpf);
         }
 
-        public IEnumerable<Portador> GetPortadores()
-        {
-            return _context.Portadores;
-        }
-
         public void SaveChanges()
         {
             _context.SaveChanges();

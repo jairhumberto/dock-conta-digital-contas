@@ -10,25 +10,31 @@ namespace ContasService.Controllers
     [ApiController]
     public class OperacoesController : ControllerBase
     {
-        private readonly IContasRepository _repository;
+        private readonly IContasRepository _contasRepository;
         private readonly IMapper _mapper;
-        private readonly IOperacaoDataClient _operacaoDataClient;
+        private readonly IOperacoesServiceClient _operacoesServiceClient;
 
-        public OperacoesController(IContasRepository repository, IMapper mapper, IOperacaoDataClient operacaoDataClient)
+        public OperacoesController(IContasRepository contasRepository, IMapper mapper,
+                IOperacoesServiceClient operacoesServiceClient)
         {
-            _repository = repository;
+            _contasRepository = contasRepository;
             _mapper = mapper;
-            _operacaoDataClient = operacaoDataClient;
+            _operacoesServiceClient = operacoesServiceClient;
         }
 
         [HttpPost]
         public async Task<ActionResult> ProcessaOperacao(OperacaoReadDto operacaoReadDto)
         {
-            var contaModel = _repository.GetContaByNumero(operacaoReadDto.ContaNumero);
+            var contaModel = _contasRepository.GetContaByNumero(operacaoReadDto.ContaNumero);
 
             if (contaModel == null)
             {
-                return NotFound("Conta nao encontrada");
+                return NotFound("Conta nao cadastrada");
+            }
+
+            if (operacaoReadDto.Valor <= 0)
+            {
+                return BadRequest("Valor invalido");
             }
             
             if (operacaoReadDto.Tipo == "saque" && contaModel.Saldo < operacaoReadDto.Valor)
@@ -41,12 +47,11 @@ namespace ContasService.Controllers
                 return Unauthorized("Conta inativa ou bloqueada");
             }
 
-            contaModel.Saldo += operacaoReadDto.Tipo == "saque" ? -operacaoReadDto.Valor : operacaoReadDto.Valor;
-
             var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
-            await _operacaoDataClient.SendContaToOperacao(contaReadDto);
+            await _operacoesServiceClient.CreateConta(contaReadDto);
 
-            _repository.SaveChanges();
+            contaModel.Saldo += operacaoReadDto.Tipo == "saque" ? -operacaoReadDto.Valor : operacaoReadDto.Valor;
+            _contasRepository.SaveChanges();
 
             return NoContent();
         }

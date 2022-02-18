@@ -15,15 +15,15 @@ namespace ContasService.Controllers
         private readonly IContasRepository _contasRepository;
         private readonly IPortadoresRepository _portadoresRepository;
         private readonly IMapper _mapper;
-        private readonly IOperacaoDataClient _operacaoDataClient;
+        private readonly IOperacoesServiceClient _operacoesServiceClient;
 
         public ContasController(IContasRepository contasRepository, IPortadoresRepository portadoresRepository,
-                IMapper mapper, IOperacaoDataClient operacaoDataClient)
+                IMapper mapper, IOperacoesServiceClient operacoesServiceClient)
         {
             _contasRepository = contasRepository;
             _portadoresRepository = portadoresRepository;
             _mapper = mapper;
-            _operacaoDataClient = operacaoDataClient;
+            _operacoesServiceClient = operacoesServiceClient;
         }
 
         [HttpPost]
@@ -40,19 +40,14 @@ namespace ContasService.Controllers
             contaModel.PortadorCpf = portadorModel.Cpf;
 
             _contasRepository.CreateConta(contaModel);
-            _contasRepository.SaveChanges();
-            
-            try
-            {
-                var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
-                await _operacaoDataClient.SendContaToOperacao(contaReadDto);
-            }
-            catch(Exception)
-            {
-                Console.WriteLine("Operacoes esta indisponivel");
-            }
 
-            return CreatedAtRoute(nameof(GetContaByNumero), new { Numero = contaModel.Numero }, _mapper.Map<ContaReadDto>(contaModel));
+            var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
+            await _operacoesServiceClient.CreateConta(contaReadDto);
+
+            _contasRepository.SaveChanges();
+
+            return CreatedAtRoute(nameof(GetContaByNumero), new { Numero = contaModel.Numero },
+                     _mapper.Map<ContaReadDto>(contaModel));
         }
 
         [HttpGet("{numero}", Name="GetContaByNumero")]
@@ -71,8 +66,8 @@ namespace ContasService.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<ContaReadDto>> GetContas()
         {
-            var contas = _contasRepository.GetContas();
-            return Ok(_mapper.Map<IEnumerable<ContaReadDto>>(contas));
+            var contasModels = _contasRepository.GetContas();
+            return Ok(_mapper.Map<IEnumerable<ContaReadDto>>(contasModels));
         }
 
         [HttpPatch("{numero}")]
@@ -88,16 +83,15 @@ namespace ContasService.Controllers
             var contaDto = _mapper.Map<ContaUpdateDto>(contaModel);
             patchDocument.ApplyTo(contaDto, ModelState);
 
-            if(!TryValidateModel(contaDto))
+            if (!TryValidateModel(contaDto))
             {
                 return ValidationProblem(ModelState);
             }
-
-            _mapper.Map(contaDto, contaModel);
             
             var contaReadDto = _mapper.Map<ContaReadDto>(contaModel);
-            await _operacaoDataClient.SendContaToOperacao(contaReadDto);
+            await _operacoesServiceClient.CreateConta(contaReadDto);
 
+            _mapper.Map(contaDto, contaModel);
             _contasRepository.SaveChanges();
 
             return NoContent();

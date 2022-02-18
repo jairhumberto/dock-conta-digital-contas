@@ -4,30 +4,27 @@ using ContasService.Dtos;
 
 namespace ContasService.SyncDataServices.Http
 {
-    public class HttpOperacaoDataClient : IOperacaoDataClient
+    public class HttpOperacoesServiceClient : IOperacoesServiceClient
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
-        public HttpOperacaoDataClient(HttpClient httpClient, IConfiguration configuration)
+        public HttpOperacoesServiceClient(HttpClient httpClient, IConfiguration configuration)
         {
-            
             _httpClient = httpClient;
             _configuration = configuration;
         }
 
-        public async Task SendContaToOperacao(ContaReadDto conta)
+        public async Task CreateConta(ContaReadDto contaReadDto)
         {
-            var httpContent = new StringContent(
-                JsonSerializer.Serialize(conta),
-                Encoding.UTF8,
-                "application/json");
-
+            var httpContent = new StringContent(JsonSerializer.Serialize(contaReadDto), Encoding.UTF8,
+                    "application/json");
             var response = await _httpClient.PostAsync($"{_configuration["OperacoesService"]}", httpContent);
 
             if(!response.IsSuccessStatusCode)
             {
-                throw new HttpSyncException();
+                Console.WriteLine($"--->{await response.Content.ReadAsStringAsync()}");
+                //throw new HttpRequestException();
             }
         }
     }

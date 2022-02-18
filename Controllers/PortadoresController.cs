@@ -10,65 +10,55 @@ namespace ContasService.Controllers
     [ApiController]
     public class PortadoresController : ControllerBase
     {
-        private readonly IPortadoresRepository _portadorRepository;
+        private readonly IPortadoresRepository _portadoresRepository;
         private readonly IContasRepository _contasRepository;
         private readonly IMapper _mapper;
 
-        public PortadoresController(IPortadoresRepository portadorRepository, IContasRepository contasRepository,
+        public PortadoresController(IPortadoresRepository portadoresRepository, IContasRepository contasRepository,
                 IMapper mapper)
         {
-            _portadorRepository = portadorRepository;
+            _portadoresRepository = portadoresRepository;
             _contasRepository = contasRepository;
             _mapper = mapper;
         }
 
         [HttpPost]
-        public ActionResult<PortadorReadDto> CreatePortador(PortadorCreateDto portadorCreateDto)
+        public ActionResult CreatePortador(PortadorCreateDto portadorCreateDto)
         {
-            var portadorModel = _portadorRepository.GetPortadorByCpf(portadorCreateDto.Cpf);
+            var portadorModel = _portadoresRepository.GetPortadorByCpf(portadorCreateDto.Cpf);
 
             if (portadorModel != null)
             {
-                _portadorRepository.DeletePortador(portadorModel);
-                _portadorRepository.SaveChanges();
+                _portadoresRepository.DeletePortador(portadorModel);
             }
 
-            portadorModel = _mapper.Map<Portador>(portadorCreateDto);
-
-            _portadorRepository.CreatePortador(portadorModel);
-            _portadorRepository.SaveChanges();
-
-            return Ok(_mapper.Map<PortadorReadDto>(portadorModel));
-        }
-
-        [HttpDelete("{cpf}")]
-        public ActionResult DeletePortador(string cpf)
-        {
-            var portadorModel = _portadorRepository.GetPortadorByCpf(cpf);
-
-            if (portadorModel == null)
-            {
-                return NotFound();
-            }
-
-            var contas = _contasRepository.GetContasByCpfPortador(portadorModel.Cpf);
-
-            if (contas.Count() > 0)
-            {
-                throw new Exception();
-            }
-
-            _portadorRepository.DeletePortador(portadorModel);
-            _portadorRepository.SaveChanges();
+            _portadoresRepository.CreatePortador(_mapper.Map<Portador>(portadorCreateDto));
+            _portadoresRepository.SaveChanges();
 
             return NoContent();
         }
 
-        [HttpGet]
-        public ActionResult<IEnumerable<PortadorReadDto>> GetPortadores()
+        [HttpDelete("{cpf}")]
+        public ActionResult DeletePortadorByCpf(string cpf)
         {
-            var portadores = _portadorRepository.GetPortadores();
-            return Ok(_mapper.Map<IEnumerable<PortadorReadDto>>(portadores));
+            var portadorModel = _portadoresRepository.GetPortadorByCpf(cpf);
+
+            if (portadorModel == null)
+            {
+                return NotFound("Portador nao cadastrado");
+            }
+
+            var contasModel = _contasRepository.GetContasByCpfPortador(portadorModel.Cpf);
+
+            if (contasModel.Count() > 0)
+            {
+                throw new HttpRequestException();
+            }
+
+            _portadoresRepository.DeletePortador(portadorModel);
+            _portadoresRepository.SaveChanges();
+
+            return NoContent();
         }
     }
 }

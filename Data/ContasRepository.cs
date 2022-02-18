@@ -24,11 +24,6 @@ namespace ContasService.Data
             conta.Numero = conta.Id.ToString();
         }
 
-        public void DeleteContas(IEnumerable<Conta> contas)
-        {
-            _context.RemoveRange(contas);
-        }
-
         public IEnumerable<Conta> GetContasByCpfPortador(string portadorCpf)
         {
             return _context.Contas.Where(e => portadorCpf == e.PortadorCpf);

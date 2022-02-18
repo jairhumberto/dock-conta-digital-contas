@@ -10,7 +10,7 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMe
 builder.Services.AddScoped<IContasRepository, ContasRepository>();
 builder.Services.AddScoped<IPortadoresRepository, PortadoresRepository>();
 
-builder.Services.AddHttpClient<IOperacaoDataClient, HttpOperacaoDataClient>();
+builder.Services.AddHttpClient<IOperacoesServiceClient, HttpOperacoesServiceClient>();
 builder.Services.AddControllers().AddNewtonsoftJson(s => {
     s.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 });
